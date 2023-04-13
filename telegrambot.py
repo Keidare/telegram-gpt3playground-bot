@@ -1,5 +1,6 @@
 import requests
 import sqlite3
+import openai
 # Set up the database
 conn = sqlite3.connect('recipes.db')
 c = conn.cursor()
@@ -12,31 +13,28 @@ def message(input_text):
     user_message = str(input_text).lower()
     
     if user_message.startswith('/cook'):
-        # Parse the food name from the user's message
-        food_name = user_message.split(' ')[1]
+        words = user_message.split(' ')
+        if len(words) < 2:
+            # No food name provided
+            return "Please provide a food name."
+        
+        food_name = ' '.join(words[1:])
 
-        # Use the GPT-3 Playground API to generate a recipe for the food
-        response = requests.post('https://api.openai.com/v1/playground/translate',
-                                headers={'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer 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'},
-                                json={'text': f'Generate a recipe for {food_name}.',
-                                    'model': 'text-davinci-002'})
-        if response.status_code != 200:
-            print(f"API call failed with status code {response.status_code}: {response.content}")
-            return "Sorry, I could not generate a recipe at this time. Please try again later."
-
-        try:
-            recipe = response.json()['data']['translation']
-        except KeyError:
-            print(f"Unexpected response format: {response.content}")
-            return "Sorry, I could not understand the API response. Please try again later."
+        openai.api_key = "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"
+        prompt = f"Generate a recipe for {food_name}."
+        completions = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role":"user",
+                       "content": prompt}]
+        )
+        recipe = completions.choices[0].message.content
 
         # Store the recipe in the database
-        c.execute("INSERT INTO recipes VALUES (?, ?)", (food_name, recipe))
-        conn.commit()
+
 
         # Send the recipe back to the user
         return recipe
+    
     elif user_message.startswith('/listfood'):
         # Retrieve all the foods cooked by the user from the database
         c.execute("SELECT food_name FROM recipes")

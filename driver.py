@@ -13,6 +13,7 @@ def help_command(update, context):
 def handle_message(update, context):
     text = str(update.message.text).lower()
     response = tgbot.message(text)
+    update.message.reply_text("waiting for response")
     update.message.reply_text(response)
 
 def error(update, context):
@@ -26,7 +27,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.text, handle_message))
     dp.add_error_handler(error)
 
-    updater.start_polling(3)
+    updater.start_polling()
     updater.idle()
 
 main()

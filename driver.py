@@ -2,11 +2,11 @@ from telegram.ext import *
 import sqlite3
 import openai
 from dotenv import load_dotenv
+import Constraints as keys
 import os
 
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
-tg_api_key = os.getenv("TG_API_KEY")
 
 # Set up the database
 print("Bot started...")
@@ -83,7 +83,7 @@ def error(update, context):
     print(f"Update {update} caused error {context.error}")
 
 def main():
-    updater = Updater(tg_api_key, use_context=True)
+    updater = Updater(keys.bot_token, use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start_command))
     dp.add_handler(CommandHandler("help", help_command))
